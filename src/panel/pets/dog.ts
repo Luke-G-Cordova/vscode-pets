@@ -65,6 +65,19 @@ export class Dog extends BasePetType {
                     States.runRight,
                 ],
             },
+            {
+                state: States.grabbed,
+                possibleNextStates: [States.dropped],
+            },
+            {
+                state: States.dropped,
+                possibleNextStates: [
+                    States.walkRight,
+                    States.walkLeft,
+                    States.runLeft,
+                    States.runRight,
+                ],
+            },
         ],
     };
     get emoji(): string {

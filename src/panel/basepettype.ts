@@ -189,6 +189,10 @@ export abstract class BasePetType implements IPetType {
         return !isStateAboveGround(this.currentStateEnum) && this.isMoving;
     }
 
+    get canBeGrabbed() {
+        return true;
+    }
+
     showSpeechBubble(message: string, duration: number = 3000) {
         this.speech.innerHTML = message;
         this.speech.style.display = 'block';
@@ -210,6 +214,24 @@ export abstract class BasePetType implements IPetType {
         this.currentStateEnum = States.swipe;
         this.currentState = resolveState(this.currentStateEnum, this);
         this.showSpeechBubble('👋');
+    }
+
+    grab(): void {
+        if (this.currentStateEnum === States.grabbed) {
+            return;
+        }
+        this.holdStateEnum = States.walkRight;
+        this.holdState = resolveState(this.holdStateEnum, this);
+        this.currentStateEnum = States.grabbed;
+        this.currentState = resolveState(this.currentStateEnum, this);
+        this.currentState.overrideStateTimer = true;
+    }
+    drop(): void {
+        if (this.currentStateEnum === States.grabbed) {
+            this.currentState.overrideStateTimer = false;
+            this.currentStateEnum = States.dropped;
+            this.currentState = resolveState(this.currentStateEnum, this);
+        }
     }
 
     chase(ballState: BallState, canvas: HTMLCanvasElement) {
@@ -287,7 +309,6 @@ export abstract class BasePetType implements IPetType {
                 this.holdStateEnum = undefined;
                 return;
             }
-
             var nextState = this.chooseNextState(this.currentStateEnum);
             this.currentState = resolveState(nextState, this);
             this.currentStateEnum = nextState;

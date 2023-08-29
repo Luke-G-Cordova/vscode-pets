@@ -99,6 +99,21 @@ function handleMouseOver(e: MouseEvent) {
         }
     });
 }
+function handleMouseDown(e: MouseEvent) {
+    var el = e.currentTarget as HTMLDivElement;
+    allPets.pets.forEach((element) => {
+        if (element.collision === el) {
+            if (!element.pet.canBeGrabbed) {
+                return;
+            }
+            element.pet.grab();
+
+            element.pet.positionLeft(e.clientX);
+            element.pet.positionBottom(e.clientY);
+            element.pet.drop();
+        }
+    });
+}
 
 function startAnimations(
     collision: HTMLDivElement,
@@ -110,6 +125,7 @@ function startAnimations(
     }
 
     collision.addEventListener('mouseover', handleMouseOver);
+    collision.addEventListener('mousedown', handleMouseDown);
     setInterval(() => {
         var updates = allPets.seekNewFriends();
         updates.forEach((message) => {

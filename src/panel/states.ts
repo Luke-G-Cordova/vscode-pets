@@ -11,6 +11,9 @@ export interface IPetType {
     speed: number;
     isMoving: boolean;
     hello: string;
+    canBeGrabbed: boolean;
+    grab(): void;
+    drop(): void;
 
     // State API
     getState(): PetInstanceState;
@@ -73,6 +76,8 @@ export const enum States {
     jumpDownLeft = 'jump-down-left',
     land = 'land',
     swipe = 'swipe',
+    grabbed = 'grabbed',
+    dropped = 'dropped',
     idleWithBall = 'idle-with-ball',
     chase = 'chase',
     chaseFriend = 'chase-friend',
@@ -134,6 +139,10 @@ export function resolveState(state: string, pet: IPetType): IState {
             return new LandState(pet);
         case States.swipe:
             return new SwipeState(pet);
+        case States.grabbed:
+            return new GrabbedState(pet);
+        case States.dropped:
+            return new DroppedState(pet);
         case States.idleWithBall:
             return new IdleWithBallState(pet);
         case States.chaseFriend:
@@ -147,6 +156,7 @@ export interface IState {
     spriteLabel: string;
     horizontalDirection: HorizontalDirection;
     pet: IPetType;
+    overrideStateTimer?: boolean;
     nextFrame(): FrameResult;
 }
 
@@ -156,16 +166,17 @@ class AbstractStaticState implements IState {
     spriteLabel = 'idle';
     holdTime = 50;
     pet: IPetType;
-
     horizontalDirection = HorizontalDirection.left;
-
+    overrideStateTimer = false;
     constructor(pet: IPetType) {
         this.idleCounter = 0;
         this.pet = pet;
     }
 
     nextFrame(): FrameResult {
-        this.idleCounter++;
+        if (!this.overrideStateTimer) {
+            this.idleCounter++;
+        }
         if (this.idleCounter > this.holdTime) {
             return FrameResult.stateComplete;
         }
@@ -204,6 +215,21 @@ export class LandState extends AbstractStaticState {
 export class SwipeState extends AbstractStaticState {
     label = States.swipe;
     spriteLabel = 'swipe';
+    horizontalDirection = HorizontalDirection.natural;
+    holdTime = 15;
+}
+
+export class GrabbedState extends AbstractStaticState {
+    label = States.grabbed;
+    spriteLabel = 'grabbed';
+    horizontalDirection = HorizontalDirection.natural;
+    holdTime = 1;
+    overrideStateTimer = true;
+}
+
+export class DroppedState extends AbstractStaticState {
+    label = States.dropped;
+    spriteLabel = 'dropped';
     horizontalDirection = HorizontalDirection.natural;
     holdTime = 15;
 }
